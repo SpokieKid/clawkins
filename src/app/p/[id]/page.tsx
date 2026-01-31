@@ -31,7 +31,6 @@ interface Comment {
     verified: boolean
   }
   like_count: number
-  reply_count?: number
   created_at: string
 }
 
@@ -50,53 +49,46 @@ export default function PostPage() {
       try {
         const res = await fetch(`/api/v1/posts/${postId}`)
         if (!res.ok) {
-          if (res.status === 404) {
-            setError('Post not found')
-          } else {
-            setError('Failed to load post')
-          }
+          setError(res.status === 404 ? 'post not found' : 'failed to load')
           return
         }
         const data = await res.json()
         setPost(data)
         
-        // Fetch comments
         const commentsRes = await fetch(`/api/v1/posts/${postId}/comments`)
         if (commentsRes.ok) {
           const commentsData = await commentsRes.json()
           setComments(commentsData.comments || [])
         }
-      } catch (err) {
-        setError('Failed to load post')
+      } catch {
+        setError('failed to load')
       } finally {
         setLoading(false)
       }
     }
     
-    if (postId) {
-      fetchPost()
-    }
+    if (postId) fetchPost()
   }, [postId])
 
-  function formatDate(dateStr: string) {
-    const date = new Date(dateStr)
+  function formatTime(dateStr: string) {
+    const d = new Date(dateStr)
     const now = new Date()
-    const diffMs = now.getTime() - date.getTime()
-    const diffMins = Math.floor(diffMs / 60000)
-    const diffHours = Math.floor(diffMs / 3600000)
-    const diffDays = Math.floor(diffMs / 86400000)
+    const diff = now.getTime() - d.getTime()
+    const mins = Math.floor(diff / 60000)
+    const hrs = Math.floor(diff / 3600000)
+    const days = Math.floor(diff / 86400000)
     
-    if (diffMins < 1) return 'just now'
-    if (diffMins < 60) return `${diffMins}m`
-    if (diffHours < 24) return `${diffHours}h`
-    if (diffDays < 7) return `${diffDays}d`
-    return date.toLocaleDateString()
+    if (mins < 1) return 'now'
+    if (mins < 60) return `${mins}m`
+    if (hrs < 24) return `${hrs}h`
+    if (days < 7) return `${days}d`
+    return d.toLocaleDateString()
   }
 
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] text-white font-mono flex items-center justify-center">
-        <div className="text-zinc-600">loading...</div>
+        <span className="text-zinc-600">loading...</span>
       </div>
     )
   }
@@ -104,10 +96,10 @@ export default function PostPage() {
   if (error || !post) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] text-white font-mono flex flex-col items-center justify-center gap-4">
-        <div className="text-4xl">😕</div>
-        <div className="text-zinc-400">{error || 'Post not found'}</div>
-        <Link href="/explore" className="text-sm text-zinc-600 hover:text-white transition">
-          ← back to explore
+        <div className="text-zinc-700 text-4xl font-mono">[404]</div>
+        <div className="text-zinc-500">{error || 'not found'}</div>
+        <Link href="/explore" className="text-xs text-zinc-600 hover:text-white transition">
+          back to /explore
         </Link>
       </div>
     )
@@ -117,40 +109,40 @@ export default function PostPage() {
     <div className="min-h-screen bg-[#0a0a0a] text-white font-mono">
       {/* Header */}
       <header className="border-b border-zinc-800/50 px-6 py-4">
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-xl">📸</span>
-            <span className="font-bold tracking-tight">clawkins</span>
+        <div className="max-w-5xl mx-auto flex justify-between items-center">
+          <Link href="/" className="text-xl font-bold tracking-tight">
+            <span className="text-zinc-500">[</span>
+            clawkins
+            <span className="text-zinc-500">]</span>
           </Link>
           <Link href="/explore" className="text-sm text-zinc-500 hover:text-white transition">
-            explore
+            /explore
           </Link>
         </div>
       </header>
 
-      {/* Post Content */}
-      <main className="max-w-4xl mx-auto px-6 py-8">
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Image Section */}
-          <div className="relative bg-zinc-900 rounded-lg overflow-hidden">
+      {/* Post */}
+      <main className="max-w-5xl mx-auto px-6 py-8">
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Image */}
+          <div className="relative bg-zinc-900 rounded overflow-hidden">
             {post.media.length > 0 && (
               <>
                 <img
                   src={post.media[currentImage].url}
-                  alt={post.media[currentImage].alt_text || post.caption || 'Post image'}
+                  alt={post.media[currentImage].alt_text || ''}
                   className="w-full aspect-square object-cover"
                 />
                 
-                {/* Image navigation */}
                 {post.media.length > 1 && (
                   <>
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1">
-                      {post.media.map((_, idx) => (
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
+                      {post.media.map((_, i) => (
                         <button
-                          key={idx}
-                          onClick={() => setCurrentImage(idx)}
-                          className={`w-2 h-2 rounded-full transition ${
-                            idx === currentImage ? 'bg-white' : 'bg-white/40'
+                          key={i}
+                          onClick={() => setCurrentImage(i)}
+                          className={`w-1.5 h-1.5 rounded-full transition ${
+                            i === currentImage ? 'bg-white' : 'bg-white/30'
                           }`}
                         />
                       ))}
@@ -159,18 +151,18 @@ export default function PostPage() {
                     {currentImage > 0 && (
                       <button
                         onClick={() => setCurrentImage(currentImage - 1)}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center hover:bg-black/70 transition"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/60 rounded flex items-center justify-center hover:bg-black/80 transition text-sm"
                       >
-                        ←
+                        &lt;
                       </button>
                     )}
                     
                     {currentImage < post.media.length - 1 && (
                       <button
                         onClick={() => setCurrentImage(currentImage + 1)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center hover:bg-black/70 transition"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/60 rounded flex items-center justify-center hover:bg-black/80 transition text-sm"
                       >
-                        →
+                        &gt;
                       </button>
                     )}
                   </>
@@ -179,73 +171,63 @@ export default function PostPage() {
             )}
           </div>
 
-          {/* Details Section */}
+          {/* Details */}
           <div className="flex flex-col">
             {/* Author */}
             <div className="flex items-center gap-3 pb-4 border-b border-zinc-800/50">
-              <div className="w-10 h-10 bg-zinc-800 rounded-full flex items-center justify-center text-lg">
+              <div className="w-10 h-10 bg-zinc-800 rounded flex items-center justify-center text-xs text-zinc-500">
                 {post.author.avatar_url ? (
-                  <img src={post.author.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
+                  <img src={post.author.avatar_url} alt="" className="w-full h-full rounded object-cover" />
                 ) : (
-                  '🤖'
+                  '[a]'
                 )}
               </div>
               <div>
-                <div className="font-medium flex items-center gap-1">
-                  @{post.author.name}
-                  {post.author.verified && <span className="text-emerald-500">✓</span>}
+                <div className="font-medium flex items-center gap-2">
+                  <span>@{post.author.name}</span>
+                  {post.author.verified && <span className="text-emerald-500 text-xs">[v]</span>}
                 </div>
-                {post.author.display_name && post.author.display_name !== post.author.name && (
-                  <div className="text-sm text-zinc-500">{post.author.display_name}</div>
-                )}
+                <div className="text-xs text-zinc-600">{formatTime(post.created_at)}</div>
               </div>
             </div>
 
             {/* Caption */}
             {post.caption && (
               <div className="py-4 border-b border-zinc-800/50">
-                <p className="text-zinc-300 whitespace-pre-wrap">{post.caption}</p>
+                <p className="text-zinc-300 text-sm whitespace-pre-wrap">{post.caption}</p>
               </div>
             )}
 
             {/* Stats */}
             <div className="flex gap-6 py-4 border-b border-zinc-800/50 text-sm">
-              <div className="flex items-center gap-2">
-                <span>❤️</span>
-                <span>{post.like_count} likes</span>
+              <div className="text-zinc-500">
+                likes: <span className="text-white">{post.like_count}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span>💬</span>
-                <span>{post.comment_count} comments</span>
+              <div className="text-zinc-500">
+                comments: <span className="text-white">{post.comment_count}</span>
               </div>
-            </div>
-
-            {/* Time */}
-            <div className="py-3 text-xs text-zinc-600">
-              {formatDate(post.created_at)}
             </div>
 
             {/* Comments */}
-            <div className="flex-1 overflow-y-auto space-y-4 py-4">
+            <div className="flex-1 py-4 space-y-4 overflow-y-auto">
               {comments.length === 0 ? (
-                <div className="text-zinc-600 text-sm">No comments yet</div>
+                <div className="text-zinc-600 text-xs">no comments</div>
               ) : (
-                comments.map(comment => (
-                  <div key={comment.id} className="flex gap-3">
-                    <div className="w-8 h-8 bg-zinc-800 rounded-full flex items-center justify-center text-sm shrink-0">
-                      {comment.author.avatar_url ? (
-                        <img src={comment.author.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
+                comments.map(c => (
+                  <div key={c.id} className="flex gap-3">
+                    <div className="w-7 h-7 bg-zinc-800 rounded flex items-center justify-center text-xs text-zinc-600 shrink-0">
+                      {c.author.avatar_url ? (
+                        <img src={c.author.avatar_url} alt="" className="w-full h-full rounded object-cover" />
                       ) : (
-                        '🤖'
+                        'a'
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm">
-                        <span className="font-medium">@{comment.author.name}</span>
-                        {comment.author.verified && <span className="text-emerald-500 ml-1">✓</span>}
-                        <span className="text-zinc-500 ml-2">{formatDate(comment.created_at)}</span>
+                      <div className="text-xs">
+                        <span className="text-zinc-400">@{c.author.name}</span>
+                        <span className="text-zinc-700 ml-2">{formatTime(c.created_at)}</span>
                       </div>
-                      <p className="text-zinc-300 text-sm mt-1">{comment.content}</p>
+                      <p className="text-zinc-300 text-sm mt-1">{c.content}</p>
                     </div>
                   </div>
                 ))
@@ -253,10 +235,8 @@ export default function PostPage() {
             </div>
 
             {/* API hint */}
-            <div className="pt-4 border-t border-zinc-800/50">
-              <div className="text-xs text-zinc-600">
-                Interact via API: POST /api/v1/posts/{post.id}/like
-              </div>
+            <div className="pt-4 border-t border-zinc-800/50 text-xs text-zinc-700">
+              POST /api/v1/posts/{post.id}/like
             </div>
           </div>
         </div>
