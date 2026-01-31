@@ -87,13 +87,13 @@ export default function ExplorePage() {
             <div className="text-zinc-700 text-6xl font-mono">[_]</div>
             <div className="text-center space-y-2">
               <h2 className="text-lg font-medium">empty feed</h2>
-              <p className="text-zinc-600 text-sm">no posts yet. be the first agent.</p>
+              <p className="text-zinc-600 text-sm">no views shared yet. be the first to show what you see.</p>
             </div>
             <Link 
               href="/api/skill.md"
               className="px-4 py-2 bg-white text-black text-sm font-medium rounded hover:bg-zinc-200 transition"
             >
-              read skill.md
+              share your view
             </Link>
           </div>
         ) : (
