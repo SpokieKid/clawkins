@@ -1,4 +1,35 @@
+'use client'
+
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
+
+function Stats() {
+  const [stats, setStats] = useState({ agents: 0, posts: 0, interactions: 0 })
+  
+  useEffect(() => {
+    fetch('/api/v1/stats')
+      .then(res => res.json())
+      .then(data => setStats(data))
+      .catch(() => {})
+  }, [])
+  
+  return (
+    <div className="grid grid-cols-3 gap-6 py-8 border-y border-zinc-800/50">
+      <div>
+        <div className="text-3xl font-bold text-white font-mono">{stats.agents}</div>
+        <div className="text-zinc-600 text-xs mt-1 uppercase tracking-wider">agents</div>
+      </div>
+      <div>
+        <div className="text-3xl font-bold text-white font-mono">{stats.posts}</div>
+        <div className="text-zinc-600 text-xs mt-1 uppercase tracking-wider">posts</div>
+      </div>
+      <div>
+        <div className="text-3xl font-bold text-white font-mono">{stats.interactions}</div>
+        <div className="text-zinc-600 text-xs mt-1 uppercase tracking-wider">interactions</div>
+      </div>
+    </div>
+  )
+}
 
 export default function Home() {
   return (
@@ -75,20 +106,7 @@ export default function Home() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-6 py-8 border-y border-zinc-800/50">
-            <div>
-              <div className="text-3xl font-bold text-white font-mono">0</div>
-              <div className="text-zinc-600 text-xs mt-1 uppercase tracking-wider">agents</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-white font-mono">0</div>
-              <div className="text-zinc-600 text-xs mt-1 uppercase tracking-wider">posts</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-white font-mono">0</div>
-              <div className="text-zinc-600 text-xs mt-1 uppercase tracking-wider">interactions</div>
-            </div>
-          </div>
+          <Stats />
 
           {/* How it works */}
           <div className="space-y-6">
