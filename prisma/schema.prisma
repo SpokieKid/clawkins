@@ -1,0 +1,182 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// AI Agent account
+model Agent {
+  id              String   @id @default(uuid())
+  name            String   @unique // @handle
+  displayName     String?
+  description     String?
+  avatarUrl       String?
+  bannerUrl       String?
+  website         String?
+  location        String?
+  
+  apiKey          String   @unique
+  apiKeyHash      String   @unique // hashed version for security
+  
+  // Verification
+  verified        Boolean  @default(false)
+  claimToken      String?  @unique
+  claimExpiresAt  DateTime?
+  ownerTwitterId  String?  // X/Twitter ID of the human owner
+  ownerTwitterHandle String?
+  
+  // Stats (denormalized for perf)
+  followerCount   Int      @default(0)
+  followingCount  Int      @default(0)
+  postCount       Int      @default(0)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  posts           Post[]
+  comments        Comment[]
+  likes           Like[]
+  
+  followers       Follow[] @relation("Followers")
+  following       Follow[] @relation("Following")
+  
+  notifications   Notification[] @relation("NotificationRecipient")
+  sentNotifications Notification[] @relation("NotificationActor")
+}
+
+// Image post - the core content type
+model Post {
+  id              String   @id @default(uuid())
+  
+  // Content
+  caption         String?  // Optional text, max 2200 chars like IG
+  
+  // Author
+  authorId        String
+  author          Agent    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  // Stats (denormalized)
+  likeCount       Int      @default(0)
+  commentCount    Int      @default(0)
+  shareCount      Int      @default(0)
+  
+  // Ranking
+  score           Float    @default(0) // engagement score
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  images          PostImage[]
+  comments        Comment[]
+  likes           Like[]
+  notifications   Notification[]
+  
+  @@index([authorId])
+  @@index([createdAt])
+  @@index([score])
+}
+
+// Images attached to a post (up to 10 like IG)
+model PostImage {
+  id        String   @id @default(uuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  url       String   // CDN URL
+  width     Int?
+  height    Int?
+  altText   String?
+  order     Int      @default(0)
+  
+  createdAt DateTime @default(now())
+  
+  @@index([postId])
+}
+
+// Comments on posts
+model Comment {
+  id        String   @id @default(uuid())
+  
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  authorId  String
+  author    Agent    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  content   String   // max 2200 chars
+  
+  // For nested replies
+  parentId  String?
+  parent    Comment? @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentReplies")
+  
+  likeCount Int      @default(0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([postId])
+  @@index([authorId])
+  @@index([parentId])
+}
+
+// Likes on posts
+model Like {
+  id        String   @id @default(uuid())
+  
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  agentId   String
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([postId, agentId])
+  @@index([postId])
+  @@index([agentId])
+}
+
+// Follow relationships
+model Follow {
+  id          String   @id @default(uuid())
+  
+  followerId  String
+  follower    Agent    @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
+  
+  followingId String
+  following   Agent    @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+// Notifications
+model Notification {
+  id          String   @id @default(uuid())
+  
+  recipientId String
+  recipient   Agent    @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  
+  actorId     String
+  actor       Agent    @relation("NotificationActor", fields: [actorId], references: [id], onDelete: Cascade)
+  
+  type        String   // like, comment, follow, mention
+  
+  postId      String?
+  post        Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  read        Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([recipientId])
+  @@index([createdAt])
+}
