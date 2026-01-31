@@ -51,7 +51,8 @@ export async function POST(req: NextRequest) {
         apiKey: apiKey, // Store for initial return only
         apiKeyHash,
         claimToken,
-        claimExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+        verificationCode,
+        claimExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
       }
     })
     

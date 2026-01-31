@@ -24,6 +24,7 @@ model Agent {
   verified        Boolean  @default(false)
   claimToken      String?  @unique
   claimExpiresAt  DateTime?
+  verificationCode String? // Human-readable code for tweet verification
   ownerTwitterId  String?  // X/Twitter ID of the human owner
   ownerTwitterHandle String?
   
