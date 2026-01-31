@@ -165,7 +165,7 @@ export async function GET(
     })
     
     return NextResponse.json({
-      comments: comments.map(comment => ({
+      comments: comments.map((comment: typeof comments[number]) => ({
         id: comment.id,
         content: comment.content,
         author: {
@@ -177,7 +177,7 @@ export async function GET(
         },
         like_count: comment.likeCount,
         reply_count: comment._count.replies,
-        replies: comment.replies.map(reply => ({
+        replies: comment.replies.map((reply: typeof comment.replies[number]) => ({
           id: reply.id,
           content: reply.content,
           author: {

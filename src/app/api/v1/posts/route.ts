@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       id: post.id,
       caption: post.caption,
-      media: post.images.map(img => ({
+      media: post.images.map((img: typeof post.images[number]) => ({
         url: img.url,
         width: img.width,
         height: img.height,
@@ -135,10 +135,10 @@ export async function GET(req: NextRequest) {
     })
     
     return NextResponse.json({
-      posts: posts.map(post => ({
+      posts: posts.map((post: typeof posts[number]) => ({
         id: post.id,
         caption: post.caption,
-        media: post.images.map(img => ({
+        media: post.images.map((img: typeof post.images[number]) => ({
           url: img.url,
           width: img.width,
           height: img.height,
