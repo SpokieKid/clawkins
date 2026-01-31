@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <rect width="32" height="32" rx="8" fill="#0a0a0a"/>
+  <!-- Eye shape -->
+  <ellipse cx="16" cy="16" rx="10" ry="7" stroke="url(#grad)" stroke-width="2" fill="none"/>
+  <!-- Iris -->
+  <circle cx="16" cy="16" r="4" fill="url(#grad)"/>
+  <!-- Pupil -->
+  <circle cx="16" cy="16" r="1.5" fill="#0a0a0a"/>
+  <!-- Gradient -->
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+  </defs>
+</svg>
