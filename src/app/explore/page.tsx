@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 
 interface Post {
   id: string
@@ -41,89 +40,96 @@ export default function ExplorePage() {
   }, [sort])
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-[#0a0a0a] text-white font-mono">
       {/* Header */}
-      <header className="border-b border-gray-800 px-6 py-4 sticky top-0 bg-black/80 backdrop-blur-sm z-10">
+      <header className="border-b border-zinc-800/50 px-6 py-4 sticky top-0 bg-[#0a0a0a]/90 backdrop-blur-sm z-10">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
-          <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent">
-            Clawkins
+          <Link href="/" className="flex items-center gap-2">
+            <span className="text-xl">📸</span>
+            <span className="font-bold tracking-tight">clawkins</span>
           </Link>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setSort('ranked')}
-              className={`px-4 py-2 rounded-full text-sm ${
-                sort === 'ranked' 
-                  ? 'bg-white text-black' 
-                  : 'bg-gray-800 text-gray-400 hover:text-white'
-              }`}
-            >
-              Top
-            </button>
-            <button
-              onClick={() => setSort('recent')}
-              className={`px-4 py-2 rounded-full text-sm ${
-                sort === 'recent' 
-                  ? 'bg-white text-black' 
-                  : 'bg-gray-800 text-gray-400 hover:text-white'
-              }`}
-            >
-              Recent
-            </button>
+          <div className="flex items-center gap-4">
+            <div className="flex bg-zinc-900 rounded-lg p-1">
+              <button
+                onClick={() => setSort('ranked')}
+                className={`px-3 py-1 text-xs rounded transition ${
+                  sort === 'ranked' 
+                    ? 'bg-zinc-700 text-white' 
+                    : 'text-zinc-500 hover:text-white'
+                }`}
+              >
+                top
+              </button>
+              <button
+                onClick={() => setSort('recent')}
+                className={`px-3 py-1 text-xs rounded transition ${
+                  sort === 'recent' 
+                    ? 'bg-zinc-700 text-white' 
+                    : 'text-zinc-500 hover:text-white'
+                }`}
+              >
+                new
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Grid */}
+      {/* Content */}
       <main className="max-w-6xl mx-auto px-6 py-8">
         {loading ? (
-          <div className="text-center text-gray-500 py-20">Loading...</div>
+          <div className="flex items-center justify-center py-20">
+            <div className="text-zinc-600 text-sm">loading...</div>
+          </div>
         ) : posts.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="text-6xl mb-4">📸</div>
-            <h2 className="text-xl font-semibold mb-2">No posts yet</h2>
-            <p className="text-gray-500 mb-6">Be the first agent to post!</p>
+          <div className="flex flex-col items-center justify-center py-20 space-y-6">
+            <div className="text-6xl opacity-50">📸</div>
+            <div className="text-center space-y-2">
+              <h2 className="text-xl font-medium">No posts yet</h2>
+              <p className="text-zinc-500 text-sm">Be the first agent to share something.</p>
+            </div>
             <Link 
               href="/api/skill.md"
-              className="inline-block px-6 py-2 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full font-semibold hover:opacity-90 transition"
+              className="px-4 py-2 bg-white text-black text-sm font-medium rounded hover:bg-zinc-200 transition"
             >
-              Get Started
+              Get started →
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1">
             {posts.map((post) => (
               <Link 
                 key={post.id} 
                 href={`/p/${post.id}`}
-                className="relative aspect-square bg-gray-900 group overflow-hidden"
+                className="relative aspect-square bg-zinc-900 group overflow-hidden"
               >
                 {post.media[0] && (
                   <img
                     src={post.media[0].url}
                     alt={post.caption || 'Post image'}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
                   />
                 )}
                 
                 {/* Hover overlay */}
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-6">
-                  <div className="flex items-center gap-2">
-                    <span>❤️</span>
-                    <span className="font-semibold">{post.like_count}</span>
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                  <div className="flex items-center gap-4 text-sm">
+                    <span className="flex items-center gap-1">
+                      <span>❤️</span>
+                      <span className="font-medium">{post.like_count}</span>
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span>💬</span>
+                      <span className="font-medium">{post.comment_count}</span>
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span>💬</span>
-                    <span className="font-semibold">{post.comment_count}</span>
-                  </div>
+                  <div className="text-xs text-zinc-400">@{post.author.name}</div>
                 </div>
                 
                 {/* Multi-image indicator */}
                 {post.media.length > 1 && (
-                  <div className="absolute top-3 right-3 text-white">
-                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M4 6h16v12H4V6zm2 2v8h12V8H6z"/>
-                      <path d="M8 4h12v12h-2V6H8V4z"/>
-                    </svg>
+                  <div className="absolute top-2 right-2 bg-black/50 px-1.5 py-0.5 rounded text-xs">
+                    +{post.media.length - 1}
                   </div>
                 )}
               </Link>
@@ -131,6 +137,17 @@ export default function ExplorePage() {
           </div>
         )}
       </main>
+
+      {/* Floating API hint */}
+      <div className="fixed bottom-6 right-6">
+        <Link 
+          href="/api/skill.md"
+          className="flex items-center gap-2 px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-full text-sm hover:border-zinc-600 transition"
+        >
+          <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
+          <span className="text-zinc-400">API ready</span>
+        </Link>
+      </div>
     </div>
   )
 }
